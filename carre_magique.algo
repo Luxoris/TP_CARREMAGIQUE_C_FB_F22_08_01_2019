@@ -1,0 +1,171 @@
+ALGORITHME carre_magique
+//BUT	 : 
+//Principe :
+	Tableau à deux dimensions de taille impaire (5*5 ou 7*7), on l'utilise pour caractérisé l'emplacement de noeuds numériques.
+	 - Le premier entier 1, se trouve au nord du milieu de la table, elle devient la positon courante.
+	 - On place les chiffres de façon croissante en allant au Nord-Est de la position courante, une seule fois.
+	 - Si la place est déjà prise, on se déplace au NORD-OUEST jusqu'à trouver cette place libre.
+	 - Le tableau est considéré comme sphérique. C'est à dire que si l'on arrive à la dernière colonne, 
+		on revient à la première colonne, de même pour les lignes.
+	 FONCTIONS
+	 - initialiser
+	 - avancer
+	 	- avGauche
+	 	- Corriger
+	 	- avDroite
+	 - Recherche vide
+	 - Placer
+	 - Afficher
+//ENTREE : 
+//SORTIE :
+
+CONST
+	TAILLE <- 5 : ENTIER
+	VALEUR_PAR_DEFAUT <- 0 : ENTIER
+	VALEUR_DEPART <- 1 : ENTIER
+
+TYPE GRILLE = TABLEAU[1..TAILLE,1..TAILLE] DE ENTIER
+
+TYPE POSITION = ENREGISTREMENT
+	x : ENTIER
+	y : ENTIER
+FINENREGISTREMENT
+
+//programme initialisation du carré
+PROCEDURE initialiser(VAR tab: GRILLE,VAR point:POSITION, VAR index:ENTIER)
+VAR
+	i,j : ENTIER
+DEBUT
+	POUR i DE 1 A TAILLE FAIRE
+		POUR j DE 1 A TAILLE FAIRE
+			tab[i,j] <- VALEUR_PAR_DEFAUT
+		FINPOUR
+	FINPOUR
+
+	//intialisation de la valeur 1, et de la position des pointeurs.
+	point.x <- TAILLE DIV(2)
+	point.y <- TAILLE DIV(2) +1
+	tab[point.x,point.y] <- index
+FINPROCEDURE
+
+
+//procedure Recherche vide
+
+FONCTION RechercheVide(VAR tab: GRILLE, VAR point:POSITION):BOOLEEN
+VAR
+	vide : BOOLEEN
+
+DEBUT
+	vide <- FAUX
+	SI (tab[point.x,point.y] = VALEUR_PAR_DEFAUT) ALORS
+		vide <- VRAI
+	FINSI
+	RechercheVide <- vide
+FINFONCTION
+
+//procedure avancer
+	//procedure avancer avDroite
+PROCEDURE AvDroite(VAR point:POSITION)
+DEBUT
+		point.x <- point.x -1;
+		point.y <- point.y +1;
+
+
+FINPROCEDURE
+
+	//procedure AvGauche
+PROCEDURE AvGauche(VAR point:POSITION)
+DEBUT
+		point.x <- point.x -1;
+		point.y <- point.y -1;
+
+
+FINPROCEDURE
+
+	//procedure Corriger
+PROCEDURE Corriger(VAR point:POSITION)
+DEBUT
+	SI point.x < 1 ALORS
+		point.x <- 5
+	SINON SI point.x > 5 ALORS
+		point.x <- 1
+	FINSI
+
+	SI point.y < 1 ALORS
+		point.y <- 5
+	SINON SI point.y > 5 ALORS
+		point.y <- 1
+	FINSI
+
+FINFONCTION
+
+//procedure avancer
+PROCEDURE avancer(VAR point:POSITION, sensNormal:BOOLEEN)
+DEBUT
+	SI sensNormal ALORS
+		AvDroite(point)
+	SINON
+		AvGauche(point)
+	FINSI
+
+	Corriger(point)
+FINPROCEDURE
+
+//procedure placer
+PROCEDURE placer(VAR tab : GRILLE, point:POSITION, index:ENTIER)
+DEBUT
+	tab[point.x,point.y] <- index
+FINPROCEDURE
+
+//procedure afficher
+PROCEDURE afficher(tab : GRILLE)
+VAR
+	i,j : ENTIER
+	str,trait: CHAINE
+DEBUT
+	POUR i DE 1 A TAILLE FAIRE
+		str <- "|"
+		trait <- "_"
+  		POUR j DE 1 A TAILLE FAIRE
+
+  			str <- str & tab[i,j] & "|"
+  			trait <- trait & "__"
+		FINPOUR
+		ECRIRE trait
+		ECRIRE str
+	FINPOUR
+FINPROCEDURE
+
+////////////////////////////////////////////////////////////////////////
+//Programme principal
+
+VAR
+	tab : GRILLE
+	index, maxIndex : ENTIER
+	point : POSITION
+	sensNormal : BOOLEEN
+
+DEBUT
+	index <- VALEUR_DEPART	//initialise la valeur de départ
+	maxIndex <- (TAILLE * TAILLE) + VALEUR_DEPART - 1
+	sensNormal <- VRAI;
+
+	initialiser(tab, point, index)
+	index <- index +1 //la première valeur est déjà renseigner, le premier nombre à renseigner est donc VALEUR_DEPART +1.
+	
+	REPETER
+		avancer(point,sensNormal)
+		sensNormal <- RechercheVide(tab,point) //signifie que si la case est vide, le sens de l'avancée est normal.
+
+		SI sensNormal ALORS				//si la case est vide, on place le nombre dans le tableau et on passe au nombre suivant.
+			placer(tab,point,index)
+			index <- index + 1
+		FINSI
+	JUSQU'A (index > maxIndex)
+
+	afficher(tab)
+
+FIN
+
+
+
